@@ -1,4 +1,138 @@
--- Total Revenue
+-- KPI: Total revenue across all transactions
 SELECT 
     SUM(total_price) AS total_revenue
 FROM pizza_sales;
+
+-- Data validation for revenue values
+SELECT 
+    MIN(total_price) AS min_total_price,
+    MAX(total_price) AS max_total_price
+FROM pizza_sales;
+
+-- KPI: Average revenue generated per order
+SELECT 
+     SUM(total_price) / COUNT(DISTINCT order_id) AS avg_order_value
+FROM pizza_sales;
+
+-- Validation: total distinct orders used for AOV
+SELECT 
+    COUNT(DISTINCT order_id) AS total_orders
+FROM pizza_sales;
+
+--KPI: Total number of pizzas sold
+SELECT 
+    SUM(quantity) AS total_pizzas_sold
+FROM pizza_sales;
+
+-- Validation: check quantity range
+SELECT 
+    MIN(quantity) AS min_quantity,
+    MAX(quantity) AS max_quantity
+FROM pizza_sales;
+
+-- KPI: Total number of distinct orders
+SELECT 
+    COUNT(DISTINCT order_id) AS total_orders
+FROM pizza_sales;
+
+-- Validation: compare total rows vs distinct orders
+SELECT 
+    COUNT(*) AS total_rows,
+    COUNT(DISTINCT order_id) AS distinct_orders
+FROM pizza_sales;
+
+--KPI: Average number of pizzas per order
+SELECT 
+    ROUND(
+        SUM(quantity) * 1.0 / COUNT(DISTINCT order_id),
+        2
+    ) AS avg_pizzas_per_order
+FROM pizza_sales;
+
+-- Trend: Total orders by day of week
+SELECT 
+    DATENAME(DW, order_date) AS order_day,
+    COUNT(DISTINCT order_id) AS total_orders 
+FROM pizza_sales
+GROUP BY DATENAME(DW, order_date);
+
+-- Trend: Total orders by hour of day
+SELECT 
+    DATEPART(HOUR, order_time) AS order_hours,
+    COUNT(DISTINCT order_id) AS total_orders
+FROM pizza_sales
+GROUP BY DATEPART(HOUR, order_time)
+ORDER BY DATEPART(HOUR, order_time);
+
+-- Distribution: Revenue share by pizza category
+SELECT 
+    pizza_category,
+    CAST(SUM(total_price) AS DECIMAL(10,2)) AS total_revenue,
+    CAST(
+        SUM(total_price) * 100.0 / 
+        (SELECT SUM(total_price) FROM pizza_sales)
+        AS DECIMAL(10,2)
+    ) AS pct_revenue
+FROM pizza_sales
+GROUP BY pizza_category;
+
+-- Validation: percentage should sum to ~100
+SELECT 
+    SUM(
+        SUM(total_price) * 100.0 / 
+        (SELECT SUM(total_price) FROM pizza_sales)
+    ) AS total_pct
+FROM pizza_sales
+GROUP BY pizza_category;
+
+-- Distribution: Revenue share by pizza size
+SELECT 
+    pizza_size,
+    CAST(SUM(total_price) AS DECIMAL(10,2)) AS total_revenue,
+    CAST(
+        SUM(total_price) * 100.0 / 
+        (SELECT SUM(total_price) FROM pizza_sales)
+        AS DECIMAL(10,2)
+    ) AS pct_revenue
+FROM pizza_sales
+GROUP BY pizza_size
+ORDER BY pizza_size;
+
+-- Validation: percentage should sum to ~100
+SELECT 
+    SUM(
+        SUM(total_price) * 100.0 / 
+        (SELECT SUM(total_price) FROM pizza_sales)
+    ) AS total_pct
+FROM pizza_sales
+GROUP BY pizza_size;
+
+-- Product performance: Total pizzas sold by category
+SELECT 
+    pizza_category,
+    SUM(quantity) AS total_pizzas_sold
+FROM pizza_sales
+GROUP BY pizza_category
+ORDER BY total_pizzas_sold DESC;
+
+-- Product performance: Top 5 best-selling pizzas by quantity
+SELECT TOP 5 
+    pizza_name, 
+    SUM(quantity) AS total_pizza_sold
+FROM pizza_sales
+GROUP BY pizza_name
+ORDER BY total_pizza_sold DESC;
+
+-- Product performance: Bottom 5 worst-selling pizzas by quantity
+SELECT TOP 5 
+    pizza_name, 
+    SUM(quantity) AS Total_Pizza_Sold
+FROM pizza_sales
+GROUP BY pizza_name
+ORDER BY Total_Pizza_Sold ASC;
+
+
+
+
+
+
